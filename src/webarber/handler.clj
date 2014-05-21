@@ -2,19 +2,27 @@
   (:use compojure.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [barber.core :as bb]))
+            [barber.core :as bb])
+  (:import [java.net URLEncoder]))
 
 (def pug (atom []))
 
 (defn index-html []
 (str
 "<html>
-<head><title>网页理发师</title></head>
+<head>
+<title>网页理发师</title>
+<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1' />
+<style type='text/css'>ul,li{padding:0;margin:0;list-style:none}</style>
+</head>
 <body style='text-align:center;background-color:#e5e4db'>
-  <div style='margin:64px 0px'><img src='/images/logo.png' /></div>
+  <div style='margin:50px 0px'><img src='/images/logo.png' /></div>
   <p style='color:#666;font-size:12px'>剔除网页上不重要的元素，只保留干净的正文部分。请输入网址回车:</p>
-  <form onsubmit='javascript:if(document.getElementsByName(\"url\")[0].value.split(\"/\").length<5){alert(\"本东东只支持有大段文字的页面，如新闻内容页、博客内容页\");return false}'><input name=\"url\" style='width:35em; line-height:150%; font-size:1.2em; padding:2px 5px' value='http://' /></form><ul style='list-style:none;paddin:0;margin:0'>"
-(apply str (for [i @pug] (str "<li><a href='" i "'>" i "</a></li>")))
+  <form onsubmit='javascript:if(document.getElementsByName(\"url\")[0].value.split(\"/\").length<5){alert(\"本东东只支持有大段文字的页面，如新闻内容页、博客内容页\");return false}'><input name=\"url\" style='min-width:20px;width:90%;max-width:35em; line-height:150%; font-size:1.2em; padding:2px 5px' value='http://' /></form><br><ul>"
+(apply str
+  (let [url-set (set (for [i @pug] (first i)))
+        title-map (into {} @pug)]
+     (for [i url-set] (str "<li><a href='/?url=" (URLEncoder/encode i) "'>" (get title-map i i) "</a></li>"))))
 "</ul></body>
 </html>"
 ))
@@ -22,14 +30,16 @@
 
 (defn wrap-html
   [article url]
-  (reset! pug (take 20 (conj @pug url)))
   (if (and article (:html article))
-    (str
+    (do
+      (reset! pug (take 20 (conj @pug [url (:title article)])))
+      (str
       "<html>
       <head>
       <title>"
       (:title article)
       "</title>
+      <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1' />
       <style type='text/css'>
       div#nav a{color:yellow}
       </style>
@@ -39,15 +49,17 @@
       <a href='" url "' target=_blank>原网页</a>
       <span>准确分:" (:weight article) "</span>
       </div>
-      <div style='padding:1em; width:44em; margin:20px auto; line-height:2em;color:#333;background-color:#f6f4ec;border-radius: 5px;'>"
+      <div style='padding:1em; max-width:44em; margin:20px auto; line-height:2em;color:#333;background-color:#f6f4ec;border-radius: 5px;'>"
       "<h1>" (:title article) "</h1>"
       (:html article)
       "</div>
        </body>
-       </html>")
+       </html>"))
     (str
       "<html>
-       <head></head>
+       <head>
+       <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1' />
+       </head>
        <body style='text-align:center;margin:50px 0px'>分数:" (:weight article)
        "<div>解析结果不适合阅读，建议查询<a href='"
        url
