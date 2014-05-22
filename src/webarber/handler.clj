@@ -23,7 +23,11 @@
   (let [url-set (set (for [i @pug] (first i)))
         title-map (into {} @pug)]
      (for [i url-set] (str "<li><a href='/?url=" (URLEncoder/encode i) "'>" (get title-map i i) "</a></li>"))))
-"</ul></body>
+"</ul>
+<br>
+<div><a href=\"javascript:window.location.href='http://barber.duapp.com/?url='+encodeURI(window.location.href);\">barber</a> &lt;--右键点击链接并加入书签后在访问网页时可以随时切换
+</div>
+</body>
 </html>"
 ))
 
@@ -32,7 +36,7 @@
   [article url]
   (if (and article (:html article))
     (do
-      (reset! pug (take 20 (conj @pug [url (:title article)])))
+      (reset! pug (take 100 (conj @pug [url (:title article)])))
       (str
       "<html>
       <head>
