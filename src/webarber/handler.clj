@@ -4,6 +4,7 @@
             [compojure.route :as route]
             [barber.core :as bb]
             [webarber.html :as html]
+            [clojure.data.json :as json]
             [clj-leveldb :as ldb]))
 
 
@@ -25,9 +26,9 @@
   {:key-decoder byte-streams/to-string :val-decoder byte-streams/to-string}))
 (defn- get-cache [url]
   (if-let [article (ldb/get page-db url)]
-    (read-string article)))
+    (json/read-str article :key-fn keyword)))
 (defn- put-cache [url article]
-  (ldb/put page-db url (pr-str article)))
+  (ldb/put page-db url (json/write-str article)))
 
 (defn get-article
   [url]
