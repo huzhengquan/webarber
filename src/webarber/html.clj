@@ -57,3 +57,16 @@
        "'>原网页</a></div><a href='/'>返回首页重新尝试其他网页</a></body></html>")))
 
 
+(defn admin
+  [ruse-map]
+  (str
+  "<html><head><title>admin</title></head>
+  <body><form method=\"post\">
+  域名：<input name=\"domain\" type=\"text\" style=\"width:44em\" /> <br>
+  匹配：<input name=\"rematch\"  type=\"text\" style=\"width:44em\" /> <br>
+  例子：<input name=\"url\"  type=\"text\" style=\"width:44em\" /> <br>
+  查询：<textarea name=\"query\" rows=\"15\" cols=\"64\"> </textarea> <br>
+  <input type=\"submit\" value=\"提交\"></form>
+  <dl>"
+  (apply str (for [[k v] ruse-map] (str "<dt>" k "<a href=\"/admin?delete=" (URLEncoder/encode k) "\">删除</a></dt><dd><pre>" v "</pre></dd>")))
+  "</dl></body></html>"))
